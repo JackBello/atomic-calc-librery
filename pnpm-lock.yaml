@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      ulid:
+        specifier: ^2.3.0
+        version: 2.3.0
     devDependencies:
       '@farmfe/cli':
         specifier: ^1.0.2
@@ -1262,6 +1266,10 @@ packages:
 
   ua-parser-js@1.0.38:
     resolution: {integrity: sha512-Aq5ppTOfvrCMgAPneW1HfWj66Xi7XL+/mIy996R1/CLS/rcyJQm6QZdsKrUeivDFQ+Oc9Wyuwor8Ze8peEoUoQ==}
+
+  ulid@2.3.0:
+    resolution: {integrity: sha512-keqHubrlpvT6G2wH0OEfSW4mquYRcbe/J8NMmveoQOjUqmo+hXtO+ORCpWhdbZ7k72UtY61BL7haGxW6enBnjw==}
+    hasBin: true
 
   undici-types@6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
@@ -2661,6 +2669,8 @@ snapshots:
   typescript@5.5.4: {}
 
   ua-parser-js@1.0.38: {}
+
+  ulid@2.3.0: {}
 
   undici-types@6.19.8: {}
 

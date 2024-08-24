@@ -38,6 +38,10 @@ section[data-type="table-body"] {
   height: 100%;
 }
 
+section[data-type="cell-char"] {
+  cursor: pointer;
+}
+
 section[data-type="cell-number"] {
   display: flex;
   justify-content: center;
@@ -77,4 +81,16 @@ section[data-type="cell"] input {
 section[data-type="cell"] input:focus {
   opacity: 1;
   cursor: auto;
+}
+
+input.cell-focus {
+  border: #0ade23 1.5px solid !important;
+}
+
+section.cell-select {
+  background-color: rgba(10, 222, 35, 0.4);
+}
+
+section.location-select {
+  background-color: #0ade23 !important;
 }
