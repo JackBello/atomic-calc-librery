@@ -4,7 +4,7 @@ section[data-type="table"] {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  border: solid black 1px;
+  border: solid #eeeeee 0.5px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
@@ -20,12 +20,12 @@ section[data-type="head-cell"]:last-child {
 }
 
 section[data-location="head-cell"] {
-  border-left: 1px solid black;
+  border-left: 0.5px solid #eeeeee;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 6px 8px;
-  background-color: #eeeeee;
+  background-color: #dcdcdc;
 }
 
 section[data-location="head-cell"] span {
@@ -42,19 +42,25 @@ section[data-type="cell-char"] {
   cursor: pointer;
 }
 
+section[data-type="cell-base"] {
+  cursor: pointer;
+}
+
 section[data-type="cell-number"] {
+  font-weight: 500;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-left: 1px solid black;
-  border-top: 1px solid black;
-  background-color: #eeeeee;
+  border-left: 0.5px solid #eeeeee;
+  border-top: 0.5px solid #eeeeee;
+  background-color: #dcdcdc;
+  cursor: pointer;
 }
 
 section[data-type="cell"] {
   position: relative;
-  border-left: 1px solid black;
-  border-top: 1px solid black;
+  border-left: 0.5px solid #eeeeee;
+  border-top: 0.5px solid #eeeeee;
 }
 
 section[data-type="cell"] span {
@@ -62,6 +68,8 @@ section[data-type="cell"] span {
   width: 100%;
   height: 100%;
   cursor: pointer;
+  box-sizing: border-box;
+  padding: 2px;
 }
 
 section[data-type="cell"] input {
@@ -78,19 +86,22 @@ section[data-type="cell"] input {
   cursor: pointer;
 }
 
-section[data-type="cell"] input:focus {
+section[data-type="cell"] input.cell-focus {
   opacity: 1;
   cursor: auto;
+  border: #0a71de 1.8px solid !important;
 }
 
-input.cell-focus {
-  border: #0ade23 1.5px solid !important;
+section[data-type="cell"] span.cell-focus {
+  cursor: default;
+  border: #0a71de 2px solid !important;
 }
 
 section.cell-select {
-  background-color: rgba(10, 222, 35, 0.4);
+  background-color: rgba(10, 113, 222, 0.4);
 }
 
 section.location-select {
-  background-color: #0ade23 !important;
+  background-color: #0a71de !important;
+  color: white;
 }

@@ -2,6 +2,7 @@ import { ulid } from "ulid";
 
 export class AtomicCalc {
   private element: HTMLElement;
+  private focusElement?: HTMLElement;
 
   private options = {
     rows: 0,
@@ -34,6 +35,9 @@ export class AtomicCalc {
           | "money"
           | "size"
           | "weight";
+        horizontal_align: "left" | "center" | "right";
+        vertical_align: "top" | "middle" | "bottom";
+        background_cell: string;
       };
     }>
   > = [[]];
@@ -46,13 +50,17 @@ export class AtomicCalc {
 
   private stateElement = {
     select: false,
+    focus: false,
     select_column: false,
     select_row: false,
+    select_all: false,
     formula: false,
   };
 
   private functions = {
     SUM: (...numbers: number[]) => {
+      numbers = numbers.flat();
+
       let result = 0;
 
       numbers.forEach((number) => {
@@ -62,6 +70,8 @@ export class AtomicCalc {
       return result;
     },
     RES: (...numbers: number[]) => {
+      numbers = numbers.flat();
+
       let result = 0;
 
       numbers.forEach((number) => {
@@ -71,6 +81,8 @@ export class AtomicCalc {
       return result;
     },
     MUL: (...numbers: number[]) => {
+      numbers = numbers.flat();
+
       let result = 0;
 
       numbers.forEach((number) => {
@@ -80,6 +92,8 @@ export class AtomicCalc {
       return result;
     },
     DIV: (...numbers: number[]) => {
+      numbers = numbers.flat();
+
       let result = 0;
 
       numbers.forEach((number) => {
@@ -89,6 +103,8 @@ export class AtomicCalc {
       return result;
     },
     MOD: (...numbers: number[]) => {
+      numbers = numbers.flat();
+
       let result = 0;
 
       numbers.forEach((number) => {
@@ -284,11 +300,11 @@ export class AtomicCalc {
       cell: string;
     }> = [];
 
-    const startsChar = vars[0].replace(/\d+/g, "");
-    const finishChar = vars[1].replace(/\d+/g, "");
+    let startsChar = vars[0].replace(/\d+/g, "");
+    let finishChar = vars[1].replace(/\d+/g, "");
 
-    const startsNumber = Number(vars[0].replace(/[A-Z]/g, ""));
-    const finishNumber = Number(vars[1].replace(/[A-Z]/g, ""));
+    let startsNumber = Number(vars[0].replace(/[A-Z]/g, ""));
+    let finishNumber = Number(vars[1].replace(/[A-Z]/g, ""));
 
     if (startsChar === finishChar) {
       const cellColumn = (
@@ -329,6 +345,37 @@ export class AtomicCalc {
     }
 
     if (startsChar !== finishChar && startsNumber !== finishNumber) {
+      if (startsNumber > finishNumber) {
+        vars = vars.reverse();
+
+        startsChar = vars[0].replace(/\d+/g, "");
+        finishChar = vars[1].replace(/\d+/g, "");
+
+        startsNumber = Number(vars[0].replace(/[A-Z]/g, ""));
+        finishNumber = Number(vars[1].replace(/[A-Z]/g, ""));
+      }
+
+      const toColumn = Number(
+        (this.element.querySelector(`[data-var="${vars[1]}"]`) as HTMLElement)
+          .dataset.x
+      );
+
+      const toRow = Number(
+        (this.element.querySelector(`[data-var="${vars[1]}"]`) as HTMLElement)
+          .dataset.y
+      );
+
+      for (let column = startsNumber - 1; column < toColumn + 1; column++) {
+        for (let row = startsNumber - 1; row < toRow + 1; row++) {
+          const cell = this.state[row][column];
+
+          result.push({
+            cell: cell.cellVar,
+            x: cell.x,
+            y: cell.y,
+          });
+        }
+      }
     }
 
     return result;
@@ -439,7 +486,7 @@ export class AtomicCalc {
       );
       computed = this.computedRange(vars);
 
-      result = data.replace(/[A-Z]+\d+:[A-Z]+\d+/g, `${computed.join(",")}`);
+      result = data.replace(/[A-Z]+\d+:[A-Z]+\d+/g, `[${computed}]`);
 
       computed = [];
     } else {
@@ -449,19 +496,125 @@ export class AtomicCalc {
     }
 
     const code = `
-        const window = undefined;
-        const document = undefined;
-        const alert = undefined;
-        const fetch = undefined;
-        const localStorage = undefined;
-        const sessionStorage = undefined;
-        const XMLHttpRequest = undefined;
-        const WebSocket = undefined;
-        const Function = undefined;
-        const console = undefined;
-        const confirm = undefined
-        const eval = undefined
-        const prompt = undefined
+    const window = undefined;
+    const document = undefined;
+    const alert = undefined;
+    const confirm = undefined;
+    const prompt = undefined;
+    const setTimeout = undefined;
+    const setInterval = undefined;
+    const fetch = undefined;
+    const XMLHttpRequest = undefined;
+    const localStorage = undefined;
+    const sessionStorage = undefined;
+    const indexedDB = undefined;
+    const WebSocket = undefined;
+    const EventSource = undefined;
+    const Worker = undefined;
+    const SharedWorker = undefined;
+    const Notification = undefined;
+    const requestAnimationFrame = undefined;
+    const cancelAnimationFrame = undefined;
+    const history = undefined;
+    const location = undefined;
+    const navigator = undefined;
+    const screen = undefined;
+    const performance = undefined;
+    const geolocation = undefined;
+    const FileReader = undefined;
+    const MutationObserver = undefined;
+    const ResizeObserver = undefined;
+    const IntersectionObserver = undefined;
+    const Crypto = undefined;
+    const AudioContext = undefined;
+    const CanvasRenderingContext2D = undefined;
+    const OffscreenCanvas = undefined;
+    const SpeechRecognition = undefined;
+    const MediaRecorder = undefined;
+    const MediaStream = undefined;
+    const URL = undefined;
+    const Blob = undefined;
+    const Image = undefined;
+    const ImageBitmap = undefined;
+    const DeviceOrientationEvent = undefined;
+    const DeviceMotionEvent = undefined;
+    const MediaQueryList = undefined;
+    const MediaQueryListEvent = undefined;
+    const customElements = undefined;
+    const ShadowRoot = undefined;
+    const HTMLTemplateElement = undefined;
+    const HTMLSlotElement = undefined;
+    const CSS = undefined;
+    const CSSStyleSheet = undefined;
+    const Audio = undefined;
+    const Video = undefined;
+    const HTMLAudioElement = undefined;
+    const HTMLVideoElement = undefined;
+    const HTMLCanvasElement = undefined;
+    const WebGLRenderingContext = undefined;
+    const WebGL2RenderingContext = undefined;
+    const Cache = undefined;
+    const CacheStorage = undefined;
+    const clipboard = undefined;
+    const SpeechSynthesis = undefined;
+    const SpeechSynthesisUtterance = undefined;
+    const BatteryManager = undefined;
+    const NetworkInformation = undefined;
+    const NotificationEvent = undefined;
+    const DataTransfer = undefined;
+    const DataTransferItem = undefined;
+    const DataTransferItemList = undefined;
+    const FormData = undefined;
+    const Headers = undefined;
+    const Request = undefined;
+    const Response = undefined;
+    const AbortController = undefined;
+    const AbortSignal = undefined;
+    const Bluetooth = undefined;
+    const PaymentRequest = undefined;
+    const PaymentResponse = undefined;
+    const PaymentAddress = undefined;
+    const URLSearchParams = undefined;
+    const DOMParser = undefined;
+    const XMLSerializer = undefined;
+    const TextDecoder = undefined;
+    const TextEncoder = undefined;
+    const BroadcastChannel = undefined;
+    const MessageChannel = undefined;
+    const MessagePort = undefined;
+    const MessageEvent = undefined;
+    const NotificationPermission = undefined;
+    const PerformanceObserver = undefined;
+    const PerformanceEntry = undefined;
+    const PerformanceNavigation = undefined;
+    const PerformanceResourceTiming = undefined;
+    const PerformanceTiming = undefined;
+    const ServiceWorker = undefined;
+    const ServiceWorkerContainer = undefined;
+    const ServiceWorkerRegistration = undefined;
+    const PushManager = undefined;
+    const PushSubscription = undefined;
+    const File = undefined;
+    const FileList = undefined;
+    const DataView = undefined;
+    const ArrayBuffer = undefined;
+    const Int8Array = undefined;
+    const Uint8Array = undefined;
+    const Uint8ClampedArray = undefined;
+    const Int16Array = undefined;
+    const Uint16Array = undefined;
+    const Int32Array = undefined;
+    const Uint32Array = undefined;
+    const Float32Array = undefined;
+    const Float64Array = undefined;
+    const BigInt64Array = undefined;
+    const BigUint64Array = undefined;
+    const WebAssembly = undefined;
+    const importScripts = undefined;
+    const JSON = undefined;
+    const atob = undefined;
+    const btoa = undefined;
+    const console = undefined; 
 
         ${computed
           .map((object: any) => `const ${object.var} = ${object.value};`)
@@ -530,49 +683,268 @@ export class AtomicCalc {
     ) as HTMLElement;
 
     if (action === "add") {
-      row.classList.add("location-select");
-      column.classList.add("location-select");
+      row.classList.add("cell-select");
+      column.classList.add("cell-select");
     }
 
     if (action === "remove") {
-      row.classList.remove("location-select");
-      column.classList.remove("location-select");
+      row.classList.remove("cell-select");
+      column.classList.remove("cell-select");
+    }
+  };
+
+  protected removeSelectCell = () => {
+    const element = this.element.querySelector(
+      `[data-var="${this.selection.cell}"]`
+    ) as HTMLElement;
+    const span = element.querySelector("span");
+
+    this.selectColumnAndRow(this.selection.cell, "remove");
+
+    this.stateElement.select = false;
+
+    this.selection.cell = "";
+
+    span?.classList.remove("cell-focus");
+  };
+
+  protected handlerClick_formulaCell = (element: HTMLElement) => {
+    const cellVar = element.dataset.var as any;
+
+    if (cellVar === this.selection.cell) return;
+
+    if (this.focusElement) {
+      const input = this.focusElement as HTMLInputElement;
+
+      input.value += cellVar;
+      input.focus();
     }
   };
 
   protected handlerClick_cell = (element: HTMLElement) => {
-    const input = element.querySelector("input");
+    const span = element.querySelector("span");
     const cellVar = element.dataset.var as any;
+
+    if (this.selection.cell && this.selection.cell !== cellVar)
+      this.removeSelectCell();
+
+    this.stateElement.select = true;
+
+    this.selection.cell = cellVar;
 
     this.selectColumnAndRow(cellVar, "add");
 
-    input?.classList.add("cell-focus");
+    span?.classList.add("cell-focus");
+  };
 
-    input?.focus();
+  protected handlerInput_cell = () => {
+    const element = this.element.querySelector(
+      `[data-var="${this.selection.cell}"]`
+    ) as HTMLElement;
+    const input = element.querySelector("input");
 
-    input?.setSelectionRange(input.value.length, input.value.length);
+    if (!input) return;
 
-    input?.addEventListener(
+    if (input.value.startsWith("=")) {
+      this.stateElement.formula = true;
+      this.focusElement = input;
+    } else {
+      this.stateElement.formula = false;
+      this.focusElement = undefined;
+    }
+  };
+
+  protected handlerClick_inputCell = (element: HTMLElement) => {
+    const input = element.querySelector("input");
+
+    this.stateElement.select = false;
+
+    this.stateElement.focus = true;
+
+    if (!input) return;
+
+    input.classList.add("cell-focus");
+
+    input.focus();
+
+    input.setSelectionRange(input.value.length, input.value.length);
+
+    input.addEventListener("input", this.handlerInput_cell);
+
+    input.addEventListener(
       "blur",
       () => {
-        this.selectColumnAndRow(cellVar, "remove");
-
-        this.stateElement.select = false;
-
-        input?.classList.remove("cell-focus");
-
-        this.processInput(input?.value, element);
+        if (!this.stateElement.formula) {
+          this.closeFormula(input, element);
+        }
       },
       { once: true }
     );
   };
 
-  protected removeSelectColumn() {}
+  protected removeSelectAll() {
+    const columns = this.element.querySelectorAll(`[data-type="cell-char"]`);
+    const rows = this.element.querySelectorAll(`[data-type="cell-number"]`);
+    const cells = this.element.querySelectorAll(`[data-type="cell"]`);
+
+    columns.forEach((child) => {
+      child.classList.remove("location-select");
+    });
+
+    rows.forEach((child) => {
+      child.classList.remove("location-select");
+    });
+
+    cells.forEach((child) => {
+      child.classList.remove("cell-select");
+    });
+  }
+
+  protected removeSelectRow() {
+    const element = this.element.querySelector(
+      `[data-number="${this.selection.row}"]`
+    ) as HTMLElement;
+    const row = element.dataset.row as any;
+
+    element.classList.remove("location-select");
+
+    const columns = this.element.querySelectorAll(`[data-type="cell-char"]`);
+
+    columns.forEach((child) => {
+      child.classList.remove("cell-select");
+    });
+
+    this.state[row].forEach((state) => {
+      const cell = this.element.querySelector(
+        `[data-var="${state.cellVar}"]`
+      ) as HTMLElement;
+
+      cell.classList.remove("cell-select");
+    });
+
+    this.selection.row = "";
+  }
+
+  protected removeSelectColumn() {
+    const element = this.element.querySelector(
+      `[data-char="${this.selection.column}"]`
+    ) as HTMLElement;
+    const column = element.dataset.column as any;
+
+    element.classList.remove("location-select");
+
+    const rows = this.element.querySelectorAll(`[data-type="cell-number"]`);
+
+    rows.forEach((child) => {
+      child.classList.remove("cell-select");
+    });
+
+    this.state.forEach((columns) => {
+      const state = columns[column];
+      const cell = this.element.querySelector(
+        `[data-var="${state.cellVar}"]`
+      ) as HTMLElement;
+
+      cell.classList.remove("cell-select");
+    });
+
+    this.selection.column = "";
+  }
+
+  protected handlerClick_allCell() {
+    const columns = this.element.querySelectorAll(`[data-type="cell-char"]`);
+    const rows = this.element.querySelectorAll(`[data-type="cell-number"]`);
+    const cells = this.element.querySelectorAll(`[data-type="cell"]`);
+
+    this.stateElement.select_all = true;
+
+    columns.forEach((child) => {
+      child.classList.add("location-select");
+    });
+
+    rows.forEach((child) => {
+      child.classList.add("location-select");
+    });
+
+    cells.forEach((child) => {
+      child.classList.add("cell-select");
+    });
+
+    let result = "";
+
+    document.addEventListener("copy", async () => {
+      for (let row = 0; row < this.state.length; row++) {
+        for (let column = 0; column < this.state[row].length; column++) {
+          const state = this.state[row][column];
+          if (state.computed) result += state.computed + " ";
+        }
+        result = result.trim() + "\n";
+      }
+
+      await navigator.clipboard.writeText(result.trim());
+    });
+  }
+
+  protected handlerClick_allCellByRow(element: HTMLElement) {
+    const row = element.dataset.row as any;
+    const number = element.dataset.number as any;
+
+    if (this.selection.row && this.selection.row !== number)
+      this.removeSelectRow();
+
+    if (this.selection.row === row) return;
+
+    this.selection.row = number;
+
+    this.stateElement.select_row = true;
+
+    element.classList.add("location-select");
+
+    const columns = this.element.querySelectorAll(`[data-type="cell-char"]`);
+
+    columns.forEach((child) => {
+      child.classList.add("cell-select");
+    });
+
+    this.state[row].forEach((state) => {
+      const cell = this.element.querySelector(
+        `[data-var="${state.cellVar}"]`
+      ) as HTMLElement;
+
+      cell.classList.add("cell-select");
+    });
+
+    let result = "";
+
+    document.addEventListener("copy", async () => {
+      this.state[row].forEach((state) => {
+        if (state.computed) result += state.computed + " ";
+      });
+
+      await navigator.clipboard.writeText(result.trim());
+    });
+  }
 
   protected handlerClick_allCellByColumn(element: HTMLElement) {
     const column = element.dataset.column as any;
+    const char = element.dataset.char as any;
+
+    if (this.selection.column && this.selection.column !== char)
+      this.removeSelectColumn();
+
+    if (this.selection.column === char) return;
+
+    this.selection.column = char;
+
+    this.stateElement.select_column = true;
 
     element.classList.add("location-select");
+
+    const rows = this.element.querySelectorAll(`[data-type="cell-number"]`);
+
+    rows.forEach((child) => {
+      child.classList.add("cell-select");
+    });
 
     this.state.forEach((columns) => {
       const state = columns[column];
@@ -585,31 +957,264 @@ export class AtomicCalc {
 
     let result = "";
 
-    document.addEventListener("copy", () => {
+    document.addEventListener("copy", async () => {
       this.state.forEach((columns) => {
         const state = columns[column];
 
-        result += state.computed + "\n";
+        if (state.computed) result += state.computed + "\n";
       });
+
+      await navigator.clipboard.writeText(result.trim());
     });
+  }
+
+  protected closeFormula(input: HTMLInputElement, element: HTMLElement) {
+    input.removeEventListener("input", this.handlerInput_cell);
+
+    input.classList.remove("cell-focus");
+
+    this.stateElement.focus = false;
+
+    this.stateElement.select = true;
+
+    this.processInput(input.value, element);
+  }
+
+  protected handlerKeyboard_cell(event: KeyboardEvent) {
+    const element = this.element.querySelector(
+      `[data-var="${this.selection.cell}"]`
+    ) as HTMLElement;
+    const { x, y } = element.dataset as any;
+
+    if (event.code === "Escape") {
+      this.stateElement.formula = false;
+
+      const input = document.activeElement as HTMLElement;
+
+      event.preventDefault();
+
+      setTimeout(function () {
+        input.blur();
+      }, 0);
+
+      return;
+    }
+
+    if (event.code === "Tab") {
+      let newSelectionState;
+      let newX;
+
+      newX = Number(x) + 1;
+
+      if (newX > this.state[y].length) return;
+
+      newSelectionState = this.state[y][newX];
+
+      if (newSelectionState) {
+        const elementSelectNew = this.element.querySelector(
+          `[data-var="${newSelectionState.cellVar}"]`
+        ) as HTMLElement;
+
+        const input = document.activeElement as HTMLInputElement;
+
+        event.preventDefault();
+
+        if (this.stateElement.formula) {
+          this.closeFormula(input, element);
+        }
+
+        this.stateElement.formula = false;
+        this.focusElement = undefined;
+
+        setTimeout(function () {
+          input.blur();
+        }, 0);
+
+        this.handlerClick_cell(elementSelectNew);
+      }
+
+      return;
+    }
+
+    if (event.code === "Enter" && this.stateElement.focus) {
+      let newSelectionState;
+      let newY;
+
+      newY = Number(y) + 1;
+
+      if (newY === this.state.length) return;
+
+      newSelectionState = this.state[newY][x];
+
+      if (newSelectionState) {
+        const elementSelectNew = this.element.querySelector(
+          `[data-var="${newSelectionState.cellVar}"]`
+        ) as HTMLElement;
+
+        const input = document.activeElement as HTMLInputElement;
+
+        event.preventDefault();
+
+        if (this.stateElement.formula) {
+          this.closeFormula(input, element);
+        }
+
+        this.stateElement.formula = false;
+        this.focusElement = undefined;
+
+        setTimeout(function () {
+          input.blur();
+        }, 0);
+
+        this.handlerClick_cell(elementSelectNew);
+      }
+
+      return;
+    }
+
+    if (this.selection.cell && !this.stateElement.focus) {
+      let newSelectionState;
+      let newX;
+      let newY;
+
+      if (event.code === "Enter") {
+        this.handlerClick_inputCell(element);
+        return;
+      }
+
+      if (event.code === "ArrowLeft") {
+        newX = Number(x) - 1;
+
+        if (newX === -1) return;
+
+        newSelectionState = this.state[y][newX];
+      }
+
+      if (event.code === "ArrowRight") {
+        newX = Number(x) + 1;
+
+        if (newX > this.state[y].length) return;
+
+        newSelectionState = this.state[y][newX];
+      }
+
+      if (event.code === "ArrowUp") {
+        newY = Number(y) - 1;
+
+        if (newY === -1) return;
+
+        newSelectionState = this.state[newY][x];
+      }
+
+      if (event.code === "ArrowDown") {
+        newY = Number(y) + 1;
+
+        if (newY === this.state.length) return;
+
+        newSelectionState = this.state[newY][x];
+      }
+
+      if (newSelectionState) {
+        const elementSelectNew = this.element.querySelector(
+          `[data-var="${newSelectionState.cellVar}"]`
+        ) as HTMLElement;
+
+        this.handlerClick_cell(elementSelectNew);
+      }
+    }
   }
 
   protected initEvents() {
     const container = this.element.querySelector('[data-type="table"]');
 
-    container?.addEventListener("click", (event) => {
+    window.addEventListener("keydown", (event) => {
+      if (this.stateElement.select || this.stateElement.focus) {
+        this.handlerKeyboard_cell(event);
+      }
+    });
+
+    container?.addEventListener("click", (event: any) => {
       const cell = (event.target as HTMLElement).closest("section");
 
       if (!cell) return;
 
-      if (cell.dataset.type === "cell-char") {
+      if (cell.dataset.type === "cell-base" && !this.stateElement.formula) {
+        if (this.stateElement.select) {
+          this.removeSelectCell();
+        }
+
+        if (this.stateElement.select_row) {
+          this.removeSelectRow();
+          this.stateElement.select_row = false;
+        }
+
+        if (this.stateElement.select_column) {
+          this.removeSelectColumn();
+          this.stateElement.select_column = false;
+        }
+
+        this.handlerClick_allCell();
+      }
+
+      if (cell.dataset.type === "cell-char" && !this.stateElement.formula) {
+        if (this.stateElement.select) {
+          this.removeSelectCell();
+        }
+
+        if (this.stateElement.select_all) {
+          this.removeSelectAll();
+          this.stateElement.select_all = false;
+        }
+
+        if (this.stateElement.select_row) {
+          this.removeSelectRow();
+          this.stateElement.select_row = false;
+        }
+
         this.stateElement.select_column = true;
         this.handlerClick_allCellByColumn(cell);
       }
 
-      if (cell.dataset.type === "cell" && !this.stateElement.select) {
-        this.stateElement.select = true;
-        this.handlerClick_cell(cell);
+      if (cell.dataset.type === "cell-number" && !this.stateElement.formula) {
+        if (this.stateElement.select) {
+          this.removeSelectCell();
+        }
+
+        if (this.stateElement.select_all) {
+          this.removeSelectAll();
+          this.stateElement.select_all = false;
+        }
+
+        if (this.stateElement.select_column) {
+          this.removeSelectColumn();
+          this.stateElement.select_column = false;
+        }
+
+        this.handlerClick_allCellByRow(cell);
+      }
+
+      if (cell.dataset.type === "cell" && !this.stateElement.formula) {
+        if (this.stateElement.select_all) {
+          this.removeSelectAll();
+          this.stateElement.select_all = false;
+        }
+
+        if (this.stateElement.select_column) {
+          this.removeSelectColumn();
+          this.stateElement.select_column = false;
+        }
+
+        if (this.stateElement.select_row) {
+          this.removeSelectRow();
+          this.stateElement.select_row = false;
+        }
+
+        if (event.detail === 2) this.handlerClick_inputCell(cell);
+        if (event.detail === 1) this.handlerClick_cell(cell);
+      }
+
+      if (cell.dataset.type === "cell" && this.stateElement.formula) {
+        this.handlerClick_formulaCell(cell);
       }
     });
   }
