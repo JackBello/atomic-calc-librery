@@ -1,7 +1,9 @@
-import { defineConfig } from '@farmfe/core';
+import { defineConfig } from "@farmfe/core";
+import postcss from "@farmfe/js-plugin-postcss";
 
 export default defineConfig({
   compilation: {
-    presetEnv: false
-  }
+    presetEnv: false,
+  },
+  plugins: [postcss()],
 });

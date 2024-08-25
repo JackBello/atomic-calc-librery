@@ -1,5 +1,7 @@
 import { ulid } from "ulid";
 
+import { TComputedFormula } from "./types/index";
+
 export class AtomicCalc {
   private element: HTMLElement;
   private focusElement?: HTMLElement;
@@ -7,9 +9,13 @@ export class AtomicCalc {
   private options = {
     rows: 0,
     columns: 0,
+    row_size: 30,
+    column_size: 100,
   } as {
     rows: number;
     columns: number;
+    row_size: number;
+    column_size: number;
   };
 
   private state: Array<
@@ -58,58 +64,116 @@ export class AtomicCalc {
   };
 
   private functions = {
-    SUM: (...numbers: number[]) => {
-      numbers = numbers.flat();
-
+    SUM: (...abstracts: TComputedFormula[] | number[]) => {
       let result = 0;
 
-      numbers.forEach((number) => {
-        result += number;
+      abstracts.forEach((abstract) => {
+        if (typeof abstract === "number") {
+          result += abstract;
+        } else {
+          result += abstract.value;
+        }
       });
 
       return result;
     },
-    RES: (...numbers: number[]) => {
-      numbers = numbers.flat();
-
+    RES: (...abstracts: TComputedFormula[] | number[]) => {
       let result = 0;
 
-      numbers.forEach((number) => {
-        result -= number;
+      abstracts.forEach((abstract) => {
+        if (typeof abstract === "number") {
+          result -= abstract;
+        } else {
+          result -= abstract.value;
+        }
       });
 
       return result;
     },
-    MUL: (...numbers: number[]) => {
-      numbers = numbers.flat();
-
+    MUL: (...abstracts: TComputedFormula[] | number[]) => {
       let result = 0;
 
-      numbers.forEach((number) => {
-        result *= number;
+      abstracts.forEach((abstract) => {
+        if (typeof abstract === "number") {
+          result *= abstract;
+        } else {
+          result *= abstract.value;
+        }
       });
 
       return result;
     },
-    DIV: (...numbers: number[]) => {
-      numbers = numbers.flat();
-
+    DIV: (...abstracts: TComputedFormula[] | number[]) => {
       let result = 0;
 
-      numbers.forEach((number) => {
-        result /= number;
+      abstracts.forEach((abstract) => {
+        if (typeof abstract === "number") {
+          result /= abstract;
+        } else {
+          result /= abstract.value;
+        }
       });
 
       return result;
     },
-    MOD: (...numbers: number[]) => {
-      numbers = numbers.flat();
-
+    MOD: (...abstracts: TComputedFormula[] | number[]) => {
       let result = 0;
 
-      numbers.forEach((number) => {
-        result /= number;
+      abstracts.forEach((abstract) => {
+        if (typeof abstract === "number") {
+          result %= abstract;
+        } else {
+          result %= abstract.value;
+        }
       });
+
+      return result;
+    },
+    ARRAY: (position: string, ...abstracts: TComputedFormula[]) => {
+      const refCell = this.element.querySelector(
+        `[data-var="${position}"]`
+      ) as HTMLElement;
+      const x = Number(refCell.dataset.x);
+      const y = Number(refCell.dataset.y);
+
+      let column = 0;
+      const middle = abstracts.length / 2;
+
+      abstracts.forEach(({ value }, index) => {
+        const cellElement = this.element.querySelector(
+          `[data-x="${x + column}"][data-y="${y + (index % middle)}"]`
+        ) as HTMLElement;
+
+        console.log(cellElement);
+
+        const span = cellElement.querySelector("span") as HTMLElement;
+
+        span.textContent = value;
+
+        if (index % middle === middle - 1) column++;
+      });
+
+      return abstracts[0].value;
+    },
+    SQRT: (abstract: number | TComputedFormula) => {
+      let result = 0;
+
+      if (typeof abstract === "number") {
+        result = Math.sqrt(abstract);
+      } else {
+        result = Math.sqrt(abstract.value);
+      }
+
+      return result;
+    },
+    CHARACTER: (abstract: number | TComputedFormula) => {
+      let result = "";
+
+      if (typeof abstract === "number") {
+        result = String.fromCharCode(abstract);
+      } else {
+        result = String.fromCharCode(abstract.value);
+      }
 
       return result;
     },
@@ -140,10 +204,8 @@ export class AtomicCalc {
       this.element = selector;
     }
 
-    this.options = {
-      rows,
-      columns,
-    };
+    this.options.columns = columns;
+    this.options.rows = rows;
   }
 
   start() {
@@ -178,18 +240,26 @@ export class AtomicCalc {
     container.dataset.columns = this.options.columns.toString();
     container.dataset.cells = `${this.options.rows * this.options.columns}`;
 
+    container.classList.add("table-main");
+
+    const columnSize = `repeat(${this.options.columns + 1}, ${
+      this.options.column_size
+    }px)`;
+
     const sectionHead = document.createElement("section");
 
     sectionHead.dataset.type = "table-head";
 
-    sectionHead.style.gridTemplateColumns = `repeat(${
-      this.options.columns + 1
-    }, 1fr)`;
+    sectionHead.classList.add("table-section");
+
+    sectionHead.style.gridTemplateColumns = columnSize;
 
     const baseCell = document.createElement("section");
 
     baseCell.dataset.type = "cell-base";
     baseCell.dataset.location = "head-cell";
+
+    baseCell.classList.add("cell-main", "cell-base");
 
     sectionHead.appendChild(baseCell);
 
@@ -197,10 +267,11 @@ export class AtomicCalc {
 
     sectionBody.dataset.type = "table-body";
 
-    sectionBody.style.gridTemplateColumns = `repeat(${
-      this.options.columns + 1
-    }, 1fr)`;
-    sectionBody.style.gridTemplateRows = `repeat(${this.options.rows}, 30px)`;
+    sectionBody.classList.add("table-section");
+
+    sectionBody.style.gridTemplateColumns = columnSize;
+
+    sectionBody.style.gridTemplateRows = `repeat(${this.options.rows}, ${this.options.row_size}px)`;
 
     container.appendChild(sectionHead);
     container.appendChild(sectionBody);
@@ -233,6 +304,8 @@ export class AtomicCalc {
       cellNumber.innerHTML = `<span>${row + 1}</span>`;
       cellNumber.style.gridColumn = "1";
 
+      cellNumber.classList.add("cell-main", "cell-number");
+
       sectionBody?.appendChild(cellNumber);
     });
 
@@ -247,6 +320,8 @@ export class AtomicCalc {
       cellChar.dataset.column = column.toString();
       cellChar.innerHTML = `<span>${char}</span>`;
 
+      cellChar.classList.add("cell-main", "cell-char");
+
       sectionHead?.appendChild(cellChar);
 
       this.list(this.options.rows).forEach((row) => {
@@ -257,8 +332,15 @@ export class AtomicCalc {
         cell.dataset.x = column.toString();
         cell.dataset.y = row.toString();
         cell.dataset.var = `${char}${row + 1}`;
+
         cell.style.gridColumn = `${column + 2}`;
         cell.style.gridRow = `${row + 1}`;
+
+        if (row >= this.options.rows - 1) {
+          cell.style.borderBottom = "none";
+        }
+
+        cell.classList.add("cell");
 
         cell.innerHTML = `
         <span>${this.state[row][column].computed}</span>
@@ -270,27 +352,17 @@ export class AtomicCalc {
     });
   }
 
-  protected computedMath(vars: string[]) {
-    const container = this.element.querySelector('[data-type="table"]');
+  protected computedMath(cellVar: string) {
+    const { x, y } = (
+      this.element.querySelector(`[data-var="${cellVar}"]`) as any
+    ).dataset;
 
-    return vars.map((cellVar) => {
-      const { x, y } = (
-        container?.querySelector(`[data-var="${cellVar}"]`) as any
-      ).dataset;
+    const process = this.processMatch(this.state[y][x].value, cellVar);
 
-      const process = this.processMatch(this.state[y][x].value, cellVar);
-
-      return {
-        value: process === undefined ? 0 : process,
-        var: cellVar,
-      };
-    });
-  }
-
-  protected computedRange(vars: string[]) {
-    return this.makeRange(vars).map(({ x, y, cell }) => {
-      return this.processMatch(this.state[y][x].value, cell);
-    });
+    return {
+      value: process === undefined ? 0 : process,
+      cellVar,
+    };
   }
 
   protected makeRange(vars: string[]) {
@@ -298,6 +370,7 @@ export class AtomicCalc {
       x: number;
       y: number;
       cell: string;
+      value: any;
     }> = [];
 
     let startsChar = vars[0].replace(/\d+/g, "");
@@ -318,6 +391,10 @@ export class AtomicCalc {
           cell: cell.cellVar,
           x: cell.x,
           y: cell.y,
+          value: this.processMatch(
+            this.state[cell.y][cell.x].value,
+            cell.cellVar
+          ),
         });
       }
     }
@@ -340,6 +417,10 @@ export class AtomicCalc {
           cell: cell.cellVar,
           x: cell.x,
           y: cell.y,
+          value: this.processMatch(
+            this.state[cell.y][cell.x].value,
+            cell.cellVar
+          ),
         });
       }
     }
@@ -348,11 +429,7 @@ export class AtomicCalc {
       if (startsNumber > finishNumber) {
         vars = vars.reverse();
 
-        startsChar = vars[0].replace(/\d+/g, "");
-        finishChar = vars[1].replace(/\d+/g, "");
-
         startsNumber = Number(vars[0].replace(/[A-Z]/g, ""));
-        finishNumber = Number(vars[1].replace(/[A-Z]/g, ""));
       }
 
       const toColumn = Number(
@@ -365,7 +442,12 @@ export class AtomicCalc {
           .dataset.y
       );
 
-      for (let column = startsNumber - 1; column < toColumn + 1; column++) {
+      const fromColumn = Number(
+        (this.element.querySelector(`[data-var="${vars[0]}"]`) as HTMLElement)
+          .dataset.x
+      );
+
+      for (let column = fromColumn; column < toColumn + 1; column++) {
         for (let row = startsNumber - 1; row < toRow + 1; row++) {
           const cell = this.state[row][column];
 
@@ -373,6 +455,10 @@ export class AtomicCalc {
             cell: cell.cellVar,
             x: cell.x,
             y: cell.y,
+            value: this.processMatch(
+              this.state[cell.y][cell.x].value,
+              cell.cellVar
+            ),
           });
         }
       }
@@ -474,26 +560,46 @@ export class AtomicCalc {
 
     const data = value.startsWith("=") ? value.slice(1) : value;
 
-    const vars = data.match(/[A-Za-z]+\d+/g) ?? [];
+    const vars = data.match(/[A-Z]+\d+(:[A-Z]+\d+)?/g) ?? [];
 
-    let result = "";
-    let computed: any[] = [];
+    let result = data;
+    const listComputed: Array<{
+      value: any;
+      cellVar: string;
+    }> = [];
+    const relations: string[] = [];
 
-    if (/[A-Z]+\d+:[A-Z]+\d+/g.test(data)) {
-      this.makeRelation(
-        position,
-        this.makeRange(vars).map(({ cell }) => cell)
-      );
-      computed = this.computedRange(vars);
+    const reserveFunctions = "(SUM|RES|DIV|MUL|MOD|ARRAY)";
 
-      result = data.replace(/[A-Z]+\d+:[A-Z]+\d+/g, `[${computed}]`);
+    [...new Set(vars).values()].forEach((cellVar) => {
+      if (/[A-Z]+\d+:[A-Z]+\d+/g.test(cellVar)) {
+        const rangeVars = cellVar.match(/[A-Z]+\d/g) ?? [];
+        const range = this.makeRange(rangeVars);
 
-      computed = [];
-    } else {
-      this.makeRelation(position, vars);
-      computed = this.computedMath([...new Set(vars).values()]);
-      result = data;
-    }
+        if (
+          new RegExp(
+            `${reserveFunctions}\\([^\\)]*${cellVar}[^\\)]*\\)`,
+            "i"
+          ).test(result)
+        ) {
+          result = result.replace(cellVar, JSON.stringify(range).slice(1, -1));
+        } else {
+          result = result.replace(cellVar, JSON.stringify(range));
+        }
+
+        result = result.replace(/ARRAY\(/g, `ARRAY('${position}',`);
+
+        relations.push(...range.map(({ cell }) => cell));
+      } else {
+        const computed = this.computedMath(cellVar);
+
+        listComputed.push(computed);
+
+        relations.push(cellVar);
+      }
+    });
+
+    this.makeRelation(position, relations);
 
     const code = `
     const window = undefined;
@@ -616,19 +722,26 @@ export class AtomicCalc {
     const btoa = undefined;
     const console = undefined; 
 
-        ${computed
-          .map((object: any) => `const ${object.var} = ${object.value};`)
+        ${listComputed
+          .map(({ cellVar, value }) => `const ${cellVar} = ${value};`)
           .join("\n")}
 
-        return ${result}
+        const _ = ${result};
+
+        if (typeof _ === 'object') throw new Error("is object")
+
+        return _
     `;
 
-    const execute = new Function("{ SUM }", code);
+    const execute = new Function(
+      "{ SUM, RES, DIV, MUL, MOD, ARRAY, SQRT, CHARACTER }, position",
+      code
+    );
 
     let output;
 
     try {
-      output = execute(this.functions);
+      output = execute(this.functions, position);
     } catch (error) {
       console.log(error);
 
@@ -876,7 +989,7 @@ export class AtomicCalc {
       for (let row = 0; row < this.state.length; row++) {
         for (let column = 0; column < this.state[row].length; column++) {
           const state = this.state[row][column];
-          if (state.computed) result += state.computed + " ";
+          if (state.computed) result += state.computed + "\t";
         }
         result = result.trim() + "\n";
       }
@@ -918,7 +1031,7 @@ export class AtomicCalc {
 
     document.addEventListener("copy", async () => {
       this.state[row].forEach((state) => {
-        if (state.computed) result += state.computed + " ";
+        if (state.computed) result += state.computed + "\t";
       });
 
       await navigator.clipboard.writeText(result.trim());

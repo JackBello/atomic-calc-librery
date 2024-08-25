@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .table-main {
+    @apply w-max flex flex-col box-border font-sans border-[0.5px] border-slate-300;
+  }
+
+  .table-section {
+    @apply w-full grid;
+  }
+
+  .cell-main {
+    @apply flex font-medium justify-center items-center cursor-pointer bg-slate-100 px-2 py-1 box-border;
+  }
+
+  .cell-base {
+    @apply border-b-[0.5px] border-slate-300;
+  }
+
+  .cell-char {
+    @apply border-l-[0.5px] border-b-[0.5px] border-slate-300;
+  }
+
+  .cell-number:first-child {
+    @apply border-t-0;
+  }
+
+  .cell-number {
+    @apply border-t-[0.5px] border-slate-300;
+  }
+
+  .cell {
+    @apply border-l-[0.5px] border-b-[0.5px] border-slate-300 relative;
+  }
+
+  .cell span {
+    @apply flex w-full h-full cursor-pointer box-border p-1;
+  }
+
+  .cell input {
+    @apply border-none outline-none opacity-0 absolute top-0 w-full h-full p-0 box-border cursor-pointer;
+  }
+
+  span.cell-focus {
+    @apply cursor-default border-2 border-blue-300 !important;
+  }
+
+  input.cell-focus {
+    @apply p-1 border-2 border-blue-300 opacity-100 cursor-auto !important;
+  }
+
+  .cell-select {
+    @apply bg-blue-300;
+  }
+
+  .location-select {
+    @apply text-white  bg-blue-500 !important;
+  }
+}
