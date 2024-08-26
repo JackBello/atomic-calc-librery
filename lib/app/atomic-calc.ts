@@ -208,6 +208,10 @@ export class AtomicCalc {
     this.options.rows = rows;
   }
 
+  setColumnSize(size: number) {
+    this.options.column_size = size;
+  }
+
   start() {
     this.initState();
     this.createElements();
@@ -1192,39 +1196,32 @@ export class AtomicCalc {
 
       if (event.code === "Enter") {
         this.handlerClick_inputCell(element);
-        return;
-      }
-
-      if (event.code === "ArrowLeft") {
+      } else if (event.code === "ArrowLeft") {
         newX = Number(x) - 1;
 
         if (newX === -1) return;
 
         newSelectionState = this.state[y][newX];
-      }
-
-      if (event.code === "ArrowRight") {
+      } else if (event.code === "ArrowRight") {
         newX = Number(x) + 1;
 
         if (newX > this.state[y].length) return;
 
         newSelectionState = this.state[y][newX];
-      }
-
-      if (event.code === "ArrowUp") {
+      } else if (event.code === "ArrowUp") {
         newY = Number(y) - 1;
 
         if (newY === -1) return;
 
         newSelectionState = this.state[newY][x];
-      }
-
-      if (event.code === "ArrowDown") {
+      } else if (event.code === "ArrowDown") {
         newY = Number(y) + 1;
 
         if (newY === this.state.length) return;
 
         newSelectionState = this.state[newY][x];
+      } else {
+        this.handlerClick_inputCell(element);
       }
 
       if (newSelectionState) {
