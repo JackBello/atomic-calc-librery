@@ -18,6 +18,30 @@ export class AtomicCalc {
     column_size: number;
   };
 
+  private keyNoActions: Record<string, boolean> = {
+    F1: true,
+    F2: true,
+    F3: true,
+    F4: true,
+    F5: true,
+    F6: true,
+    F7: true,
+    F8: true,
+    F9: true,
+    F10: true,
+    F11: true,
+    F12: true,
+    NumLock: true,
+    MetaRight: true,
+    MetaLeft: true,
+    AltLeft: true,
+    CapsLock: true,
+    Insert: true,
+    ScrollLock: true,
+    Pause: true,
+    ContextMenu: true,
+  };
+
   private state: Array<
     Array<{
       value: any;
@@ -136,15 +160,23 @@ export class AtomicCalc {
       const x = Number(refCell.dataset.x);
       const y = Number(refCell.dataset.y);
 
-      let column = 0;
-      const middle = abstracts.length / 2;
+      const totalColumns = [
+        ...new Set(
+          abstracts.map(({ cell }) => cell.replace(/\d+/g, ""))
+        ).values(),
+      ].length;
 
-      abstracts.forEach(({ value }, index) => {
+      let column = 0;
+      const middle = abstracts.length / totalColumns;
+
+      const relationFormula: string[] = [];
+
+      abstracts.forEach(({ value, cell }, index) => {
         const cellElement = this.element.querySelector(
           `[data-x="${x + column}"][data-y="${y + (index % middle)}"]`
         ) as HTMLElement;
 
-        console.log(cellElement);
+        relationFormula.push(cell);
 
         const span = cellElement.querySelector("span") as HTMLElement;
 
@@ -152,6 +184,8 @@ export class AtomicCalc {
 
         if (index % middle === middle - 1) column++;
       });
+
+      this.relationsFormulas["ARRAY"].set(position, relationFormula);
 
       return abstracts[0].value;
     },
@@ -192,6 +226,10 @@ export class AtomicCalc {
       hash: string;
     }
   >();
+
+  private relationsFormulas: Record<string, Map<string, string[]>> = {
+    ARRAY: new Map<string, string[]>(),
+  };
 
   constructor(
     selector: string | HTMLElement,
@@ -755,10 +793,15 @@ export class AtomicCalc {
     return output;
   }
 
+  protected processFormula(position: string) {
+    console.log(position);
+  }
+
   protected processValue(value: any, position: string) {
     this.processRelation(position);
 
     if (value === "") {
+      this.processFormula(position);
       this.deleteRelation(position);
 
       return value;
@@ -1097,6 +1140,25 @@ export class AtomicCalc {
     this.processInput(input.value, element);
   }
 
+  protected deleteContent() {
+    const element = this.element.querySelector(
+      `[data-var="${this.selection.cell}"]`
+    ) as HTMLElement;
+    const { x, y } = element.dataset as any;
+    const span = element.querySelector("span") as HTMLElement;
+    const input = element.querySelector("input") as HTMLInputElement;
+
+    const state = this.state[y][x];
+
+    state.computed = "";
+    state.value = "";
+
+    this.state[y][x] = state;
+
+    span.textContent = "";
+    input.value = "";
+  }
+
   protected handlerKeyboard_cell(event: KeyboardEvent) {
     const element = this.element.querySelector(
       `[data-var="${this.selection.cell}"]`
@@ -1153,7 +1215,10 @@ export class AtomicCalc {
       return;
     }
 
-    if (event.code === "Enter" && this.stateElement.focus) {
+    if (
+      (event.code === "Enter" || event.code === "NumpadEnter") &&
+      this.stateElement.focus
+    ) {
       let newSelectionState;
       let newY;
 
@@ -1194,7 +1259,19 @@ export class AtomicCalc {
       let newX;
       let newY;
 
-      if (event.code === "Enter") {
+      // console.log(event.getModifierState("NumLock"));
+
+      if (this.keyNoActions[event.code]) {
+        if (event.code === "F1") event.preventDefault();
+
+        return;
+      } else if (["Backspace", "Delete"].includes(event.code)) {
+        this.deleteContent();
+      } else if (
+        ["ControlLeft", "ControlRight", "AltRight"].includes(event.code)
+      ) {
+      } else if (["ShiftLeft", "ShiftRight"].includes(event.code)) {
+      } else if (event.code === "Enter" || event.code === "NumpadEnter") {
         this.handlerClick_inputCell(element);
       } else if (event.code === "ArrowLeft") {
         newX = Number(x) - 1;
@@ -1221,6 +1298,7 @@ export class AtomicCalc {
 
         newSelectionState = this.state[newY][x];
       } else {
+        this.deleteContent();
         this.handlerClick_inputCell(element);
       }
 

@@ -44,11 +44,11 @@
   }
 
   span.cell-focus {
-    @apply cursor-default border-2 border-blue-300 !important;
+    @apply cursor-default border-2 border-blue-600 !important;
   }
 
   input.cell-focus {
-    @apply p-1 border-2 border-blue-300 opacity-100 cursor-auto !important;
+    @apply p-1 border-2 border-blue-600 opacity-100 cursor-auto !important;
   }
 
   .cell-select {
@@ -56,6 +56,6 @@
   }
 
   .location-select {
-    @apply text-white  bg-blue-500 !important;
+    @apply text-white  bg-blue-600 !important;
   }
 }
