@@ -600,6 +600,12 @@ export class AtomicCalc {
   protected processMatch(value: string, position: string) {
     if (value === "") return 0;
 
+    if (
+      value.startsWith("=") === false &&
+      /[A-Z]+\d+(:[A-Z]+\d+)?/g.test(value) === false
+    )
+      return `"${value}"`;
+
     const data = value.startsWith("=") ? value.slice(1) : value;
 
     const vars = data.match(/[A-Z]+\d+(:[A-Z]+\d+)?/g) ?? [];

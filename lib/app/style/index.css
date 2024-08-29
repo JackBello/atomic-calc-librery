@@ -44,11 +44,11 @@
   }
 
   span.cell-focus {
-    @apply cursor-default border-2 border-blue-600 !important;
+    @apply p-[2px] cursor-default border-2 border-blue-600 !important;
   }
 
   input.cell-focus {
-    @apply p-1 border-2 border-blue-600 opacity-100 cursor-auto !important;
+    @apply p-[2px] border-2 border-blue-600 border-solid opacity-100 cursor-auto !important;
   }
 
   .cell-select {
