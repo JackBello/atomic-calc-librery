@@ -597,14 +597,23 @@ export class AtomicCalc {
     });
   }
 
+  protected processValueMatch(expression: string) {
+    if (expression.startsWith("[") && expression.endsWith("]"))
+      return `"${expression.replace(/"/g, '\\"').replace(/'/g, "\\'")}"`;
+    if (expression.startsWith("{") && expression.endsWith("}"))
+      return `"${expression.replace(/"/g, '\\"').replace(/'/g, "\\'")}"`;
+    if (expression === "undefined") return `"undefined"`;
+    if (expression === "null") return '"null"';
+    if (expression === "true" || expression === "false")
+      return Boolean(expression);
+    if (isNaN(Number(expression))) return `"${expression}"`;
+    return Number(expression);
+  }
+
   protected processMatch(value: string, position: string) {
     if (value === "") return 0;
 
-    if (
-      value.startsWith("=") === false &&
-      /[A-Z]+\d+(:[A-Z]+\d+)?/g.test(value) === false
-    )
-      return `"${value}"`;
+    if (!value.startsWith("=")) return this.processValueMatch(value);
 
     const data = value.startsWith("=") ? value.slice(1) : value;
 
@@ -799,15 +808,10 @@ export class AtomicCalc {
     return output;
   }
 
-  protected processFormula(position: string) {
-    console.log(position);
-  }
-
   protected processValue(value: any, position: string) {
     this.processRelation(position);
 
     if (value === "") {
-      this.processFormula(position);
       this.deleteRelation(position);
 
       return value;

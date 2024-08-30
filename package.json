@@ -19,6 +19,7 @@
     "typescript": "^5.4.3"
   },
   "dependencies": {
+    "numeral": "^2.0.6",
     "ulid": "^2.3.0"
   }
 }

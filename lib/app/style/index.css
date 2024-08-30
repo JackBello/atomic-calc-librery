@@ -32,7 +32,7 @@
   }
 
   .cell {
-    @apply border-l-[0.5px] border-b-[0.5px] border-slate-300 relative;
+    @apply border-l-[0.5px] border-b-[0.5px] border-slate-300 relative bg-white;
   }
 
   .cell span {
