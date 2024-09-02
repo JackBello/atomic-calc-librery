@@ -1,6 +1,6 @@
 import { ulid } from "ulid";
 
-import { TComputedFormula } from "./types/index";
+import { TComputedFormula } from "./types";
 
 export class AtomicCalc {
   private element: HTMLElement;
@@ -185,8 +185,6 @@ export class AtomicCalc {
         if (index % middle === middle - 1) column++;
       });
 
-      this.relationsFormulas["ARRAY"].set(position, relationFormula);
-
       return abstracts[0].value;
     },
     SQRT: (abstract: number | TComputedFormula) => {
@@ -224,12 +222,9 @@ export class AtomicCalc {
         y: number;
       };
       hash: string;
+      formulas: string[];
     }
   >();
-
-  private relationsFormulas: Record<string, Map<string, string[]>> = {
-    ARRAY: new Map<string, string[]>(),
-  };
 
   constructor(
     selector: string | HTMLElement,
@@ -299,7 +294,6 @@ export class AtomicCalc {
     const baseCell = document.createElement("section");
 
     baseCell.dataset.type = "cell-base";
-    baseCell.dataset.location = "head-cell";
 
     baseCell.classList.add("cell-main", "cell-base");
 
@@ -516,7 +510,13 @@ export class AtomicCalc {
 
     if (!element.dataset.hash) return;
 
-    this.relationships.delete(element.dataset.hash);
+    let relation = this.relationships.get(element.dataset.hash);
+
+    if (!relation) return;
+
+    this.relationships.delete(relation.hash);
+
+    relation = undefined;
 
     element.removeAttribute("data-hash");
   }
@@ -540,7 +540,7 @@ export class AtomicCalc {
     this.relationships.set(relation.hash, relation);
   }
 
-  protected makeRelation(position: string, vars: string[]) {
+  protected makeRelation(position: string, vars: string[], formulas: string[]) {
     const element = this.element.querySelector(
       `[data-var="${position}"]`
     ) as HTMLElement;
@@ -568,6 +568,7 @@ export class AtomicCalc {
         y: Number(y),
       },
       hash,
+      formulas,
     });
   }
 
@@ -617,9 +618,14 @@ export class AtomicCalc {
 
     const data = value.startsWith("=") ? value.slice(1) : value;
 
-    const vars = data.match(/[A-Z]+\d+(:[A-Z]+\d+)?/g) ?? [];
+    const vars = [...new Set(data.match(/[A-Z]+\d+(:[A-Z]+\d+)?/g) ?? [])];
+
+    const formulas = [
+      ...new Set(data.match(/(SUM|RES|DIV|MUL|MOD|ARRAY)/g) ?? []),
+    ];
 
     let result = data;
+
     const listComputed: Array<{
       value: any;
       cellVar: string;
@@ -628,7 +634,7 @@ export class AtomicCalc {
 
     const reserveFunctions = "(SUM|RES|DIV|MUL|MOD|ARRAY)";
 
-    [...new Set(vars).values()].forEach((cellVar) => {
+    vars.forEach((cellVar) => {
       if (/[A-Z]+\d+:[A-Z]+\d+/g.test(cellVar)) {
         const rangeVars = cellVar.match(/[A-Z]+\d/g) ?? [];
         const range = this.makeRange(rangeVars);
@@ -656,7 +662,7 @@ export class AtomicCalc {
       }
     });
 
-    this.makeRelation(position, relations);
+    this.makeRelation(position, relations, formulas);
 
     const code = `
     const window = undefined;

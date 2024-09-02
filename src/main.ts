@@ -1,6 +1,4 @@
 import "../lib/app/style/index.css";
-import { AtomicCalc } from "../lib/index";
+import { AtomicCalc } from "../lib/app/class/calc";
 
-const app = new AtomicCalc("#app", 10, 15);
-
-app.start();
+const app = new AtomicCalc("#app", 20, 15);

@@ -19,7 +19,8 @@
     "typescript": "^5.4.3"
   },
   "dependencies": {
-    "moment": "^2.30.1",
+    "@formkit/drag-and-drop": "^0.1.6",
+    "@formkit/tempo": "^0.1.2",
     "numeral": "^2.0.6",
     "ulid": "^2.3.0"
   }
