@@ -82,10 +82,6 @@ export class SchemaCalc {
     this.table.style.background = `${
       this.APP[MethodGetOptions]().style.background
     }`;
-
-    this.table.style.borderSpacing = `${
-      this.APP[MethodGetOptions]().style.spacing
-    }px`;
   }
 
   protected makeTableHead() {
@@ -113,6 +109,10 @@ export class SchemaCalc {
 
     rowChar.dataset.type = "row-base";
 
+    const borderStyle = `${
+      this.APP[MethodGetOptions]().style.spacing
+    }px solid ${this.APP[MethodGetOptions]().style.background}`;
+
     const baseCell = document.createElement("th");
 
     baseCell.dataset.type = "cell-base";
@@ -124,6 +124,11 @@ export class SchemaCalc {
     baseCell.style.background = `${
       this.APP[MethodGetOptions]().style.backgroundCellControl
     }`;
+
+    baseCell.style.borderRight = borderStyle;
+    baseCell.style.borderLeft = borderStyle;
+    baseCell.style.borderTop = borderStyle;
+    baseCell.style.borderBottom = borderStyle;
 
     rowChar.append(baseCell);
 
@@ -142,9 +147,9 @@ export class SchemaCalc {
         this.APP[MethodGetOptions]().style.backgroundCellControl
       }`;
 
-      cellChar.style.borderBottom = `${
-        this.APP[MethodGetOptions]().style.spacing
-      }px solid ${this.APP[MethodGetOptions]().style.background}`;
+      cellChar.style.borderTop = borderStyle;
+      cellChar.style.borderBottom = borderStyle;
+      cellChar.style.borderRight = borderStyle;
 
       cellChar.classList.add("cell-basic", "cell-main", "cell-char");
 

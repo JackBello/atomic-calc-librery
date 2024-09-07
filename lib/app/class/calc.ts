@@ -59,10 +59,12 @@ export class AtomicCalc {
     column: {
       active: false,
       location: "",
+      column: "",
     },
     row: {
       active: false,
       location: "",
+      row: "",
     },
     focus: {
       active: false,

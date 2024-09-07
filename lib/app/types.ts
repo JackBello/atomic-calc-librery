@@ -83,8 +83,8 @@ export type TActive = {
 
 export type TState = {
   cell: TActive;
-  column: Omit<TActive, "column" | "row">;
-  row: Omit<TActive, "column" | "row">;
+  column: Omit<TActive, "row">;
+  row: Omit<TActive, "column">;
   focus: TActive;
   formula: boolean;
   all: boolean;

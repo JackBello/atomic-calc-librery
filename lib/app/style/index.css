@@ -8,7 +8,7 @@
   }
 
   .table-container table {
-    @apply table-fixed text-nowrap w-max border-0 border-separate;
+    @apply table-fixed text-nowrap w-max border-0 border-separate border-spacing-0;
   }
 
   .fixed-row {
@@ -24,7 +24,7 @@
   }
 
   .cell-base {
-    @apply z-30 sticky -top-[1px] -left-[1px];
+    @apply z-30 sticky -top-[1px] -left-[1px] cursor-pointer;
   }
 
   .cell-main {
@@ -59,11 +59,28 @@
     @apply p-[2px] border-2 border-blue-600 border-solid opacity-100 cursor-auto transition-all duration-150 ease-in-out !important;
   }
 
+  .all-select th.cell-char,
+  .all-select th.cell-number {
+    @apply text-white bg-blue-600 transition-all duration-150 ease-in-out font-medium !important;
+  }
+
+  .all-select td.cell {
+    @apply bg-blue-200 transition-all duration-150 ease-in-out !important;
+  }
+
+  .row-select .cell-char {
+    @apply bg-blue-200 transition-all duration-150 ease-in-out !important;
+  }
+
+  .column-select tr .cell-number:first-child {
+    @apply bg-blue-200 transition-all duration-150 ease-in-out !important;
+  }
+
   .cell-select {
-    @apply bg-blue-300 transition-all duration-150 ease-in-out !important;
+    @apply bg-blue-200 transition-all duration-150 ease-in-out font-medium !important;
   }
 
   .location-select {
-    @apply text-white  bg-blue-600 transition-all duration-150 ease-in-out !important;
+    @apply text-white bg-blue-600 transition-all duration-150 ease-in-out font-medium !important;
   }
 }
